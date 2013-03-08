@@ -1,6 +1,6 @@
 // originally from http://code.google.com/p/bibtex-js/
 // MIT License, according to http://code.google.com/p/bibtex-js/
-// 
+
 // Issues:
 //  no comment handling within strings
 //  no string concatenation
@@ -254,56 +254,8 @@ function BibtexDisplay() {
     return value;
   }
   
-  this.displayBibtex2 = function(i, o) {
-    var b = new BibtexParser();
-    b.setInput(i);
-    b.bibtex();
 
-    var e = b.getEntries();
-    var old = o.find("*");
-  
-    for (var item in e) {
-      var tpl = $(".bibtex_template").clone().removeClass('bibtex_template');
-      tpl.addClass("unused");
-      
-      for (var key in e[item]) {
-      
-        var fields = tpl.find("." + key.toLowerCase());
-        for (var i = 0; i < fields.size(); i++) {
-          var f = $(fields[i]);
-          f.removeClass("unused");
-          var value = this.fixValue(e[item][key]);
-          if (f.is("a")) {
-            f.attr("href", value);
-          } else {
-            var currentHTML = f.html() || "";
-            if (currentHTML.match("%")) {
-              // "complex" template field
-              f.html(currentHTML.replace("%", value));
-            } else {
-              // simple field
-              f.html(value);
-            }
-          }
-        }
-      }
-    
-      var emptyFields = tpl.find("span .unused");
-      emptyFields.each(function (key,f) {
-        if (f.innerHTML.match("%")) {
-          f.innerHTML = "";
-        }
-      });
-    
-      o.append(tpl);
-      tpl.show();
-    }
-    
-    old.remove();
-  }
-
-
-  this.displayBibtex = function(input, output) {
+  this.displayBibtex = function(input, output, template) {
     // parse bibtex input
     var b = new BibtexParser();
     b.setInput(input);
@@ -318,7 +270,7 @@ function BibtexDisplay() {
       var entry = entries[entryKey];
       
       // find template
-      var tpl = $(".bibtex_template").clone().removeClass('bibtex_template');
+      var tpl = $(template).clone();
       
       // find all keys in the entry
       var keys = [];
@@ -371,24 +323,11 @@ function BibtexDisplay() {
 
 }
 
-function bibtex_js_draw() {
-  $(".bibtex_template").hide();
-  (new BibtexDisplay()).displayBibtex($("#bibtex_input").val(), $("#bibtex_display"));
-}
-
-// check whether or not jquery is present
-if (typeof jQuery == 'undefined') {  
-  // an interesting idea is loading jquery here. this might be added
-  // in the future.
-  alert("Please include jquery in all pages using bibtex_js!");
-} else {
-  // draw bibtex when loaded
-  $(document).ready(function () {
-    // check for template, add default
-    if ($(".bibtex_template").size() == 0) {
-      $("body").append("<div class=\"bibtex_template\"><div class=\"if author\" style=\"font-weight: bold;\">\n  <span class=\"if year\">\n    <span class=\"year\"></span>, \n  </span>\n  <span class=\"author\"></span>\n  <span class=\"if url\" style=\"margin-left: 20px\">\n    <a class=\"url\" style=\"color:black; font-size:10px\">(view online)</a>\n  </span>\n</div>\n<div style=\"margin-left: 10px; margin-bottom:5px;\">\n  <span class=\"title\"></span>\n</div></div>");
-    }
-
-    bibtex_js_draw();
-  });
+function bibtex_render(inputdiv, outputdiv, template) {
+  // check whether or not jquery is present
+  if (typeof jQuery != 'undefined') {  
+    $(template).hide();
+    (new BibtexDisplay()).displayBibtex($(inputdiv).text(), $(outputdiv), template);
+    $(inputdiv).hide();
+  }
 }
